@@ -1840,9 +1840,18 @@ window.__ys = {evaluate, computeHand, handBase, get run(){ return run; }, set ru
 })();
 </script>
 
+<div id="offline-badge" hidden>READY TO PLAY OFFLINE</div>
+<style>#offline-badge{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:95;padding:9px 14px;font-family:'Silkscreen',monospace;font-size:12px;letter-spacing:.04em;color:var(--on-acc,#1A1922);background:var(--cyan,#7CC8CB);box-shadow:4px 4px 0 0 var(--cyan-lo,#2F5658);white-space:nowrap}</style>
 <script>
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
-}
+(function(){
+  if (!('serviceWorker' in navigator) || !location.protocol.startsWith('http')) return;
+  var badge = document.getElementById('offline-badge');
+  function show(){ try { if (localStorage.getItem('yeet-offline-seen') === '2') return; localStorage.setItem('yeet-offline-seen', '2'); } catch (e) {} badge.hidden = false; setTimeout(function(){ badge.hidden = true; }, 4000); }
+  function check(){ if (!window.caches) return; caches.has('yeet-solo-grimoire-v2').then(function(ok){ if (ok) show(); }); }
+  addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').then(function(){ return navigator.serviceWorker.ready; }).then(function(){ setTimeout(check, 600); }).catch(function(){});
+  });
+  navigator.serviceWorker.addEventListener('message', function(e){ if (e.data === 'cached') check(); });
+})();
 </script>
 </body></html>
